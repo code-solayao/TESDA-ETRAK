@@ -7,7 +7,7 @@
 </head>
 <body>
     <div class="form-group">
-        <form>
+        <form action="index.php" method="post">
             <label for="username">Username</label>
             <input type="text" name="username" id="username" class="form-control">
             <label for="password">Password</label>
@@ -18,6 +18,9 @@
 </body>
 </html>
 <?php
-    echo "Hello World!";
-    echo "Hello World!";
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+
+    echo "username: {$username} <br />";
+    echo "password: {$password}";
 ?>
