@@ -1,22 +1,26 @@
 <header>
-    <nav>
-        <div>
-            <a href="index.php">E-TRAK</a>
-            <div>
-                <ul>
-                    <li>
-                        <a href="index.php">Home</a>
+    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php">TESDA E-TRAK</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                <ul class="navbar-nav flex-grow-1">
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="index.php">Home</a>
                     </li>
-                    <li>
+                    <li class="nav-item">
                         <a href="https://lookerstudio.google.com/reporting/9d6c7c0a-dcfb-4dda-ba67-589c230b57bd/page/GzuKE?fbclid=IwY2xjawGZXIlleHRuA2FlbQIxMAABHWw1eJ0SY4OlJju7W9T7gV5eNEVFGy5QgPEYOM0jkeni293iDCwtfhtkkQ_aem_jBd-8gTDT5g2pEeWlbhpFQ" 
-                            target="_blank">Dashboard</a>
-                    </li>
-                    <li>
-                        <form action="../sections/header.php" method="post">
-                            <input type="submit" name="logout" value="Log Out">
-                        </form>
+                            class="nav-link text-dark" target="_blank">Dashboard</a>
                     </li>
                 </ul>
+                <div class="form-group text-end">
+                    <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
+                        <input class="btn btn-secondary text-end" type="submit" name="logout" value="Log Out">
+                    </form>
+                </div>
             </div>
         </div>
     </nav>

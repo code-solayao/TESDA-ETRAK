@@ -1,35 +1,42 @@
+<?php
+    session_start();
+    $_SESSION["username"] = null;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESDA - E-TRAK</title>
+    <title>E-TRAK - Create account</title>
+    <link rel="stylesheet" href="../wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../wwwroot/css/style.css" />
+    <link rel="stylesheet" href="../wwwroot/css/login/style.css" />
 </head>
 <body>
-    <div>
-        <h1>Create New Account</h1>
-    </div>
-
-    <div>
+    <div class="form-box">
         <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
-            <div>
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username">
+            <div class="form-header">
+                <h1>New Account</h1>
             </div>
-            <div>
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password">
+            <div class="input-box">
+                <input type="text" class="input-field" name="username" placeholder="Username" required />
             </div>
-            <div>
-                <input type="submit" name="register" value="Register">
-                <br />
-                <input type="reset" value="Clear">
+            <div class="input-box">
+                <input type="password" class="input-field" name="password" placeholder="Password" required />
+            </div>
+            <div class="input-submit">
+                <button type="submit" class="submit-btn" name="register" id="submit">
+                    <label for="submit">Create</label>
+                </button>
+            </div>
+            <div class="action-link">
+                <p>Return to <a href="index.php">login</a>.</p>
             </div>
         </form>
     </div>
-    <div>
-        <button onclick="window.location.href = '../login/index.php';">Back</button>
-    </div>
+    
+    <script src="../wwwroot/lib/jquery/dist/jquery.min.js"></script>
+    <script src="../wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 <?php

@@ -1,36 +1,42 @@
+<?php
+    session_start();
+    $_SESSION["username"] = null;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESDA - E-TRAK</title>
+    <title>E-TRAK - Login</title>
+    <link rel="stylesheet" href="../wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../wwwroot/css/style.css" />
+    <link rel="stylesheet" href="../wwwroot/css/login/style.css" />
 </head>
 <body>
-    <div>
-        <h1>Log In</h1>
-    </div>
-
-    <div>
+    <div class="form-box">
         <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
-            <div>
-                <label for="username">Username</label>
-                <input type="text" name="username" id="username" required>
+            <div class="form-header">
+                <h1>Login</h1>
             </div>
-            <div>
-                <label for="password">Password</label>
-                <input type="password" name="password" id="password" required>
+            <div class="input-box">
+                <input type="text" class="input-field" name="username" placeholder="Username" required />
             </div>
-            <div>
-                <input type="submit" name="login" value="Log In">
-                <br />
-                <input type="reset" value="Clear">
+            <div class="input-box">
+                <input type="password" class="input-field" name="password" placeholder="Password" required />
+            </div>
+            <div class="input-submit">
+                <button type="submit" class="submit-btn" name="login" id="submit">
+                    <label for="submit">Log In</label>
+                </button>
+            </div>
+            <div class="action-link">
+                <p>Create an account <a href="register.php">here</a>.</p>
             </div>
         </form>
     </div>
-    <div>
-        <button onclick="window.location.href = 'register.php';">Register</button>
-    </div>
     
+    <script src="../wwwroot/lib/jquery/dist/jquery.min.js"></script>
+    <script src="../wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
 <?php
@@ -44,8 +50,6 @@
         echo "Please fill out all fields <br />";
         return;
     }
-
-    session_start();
 
     $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
     $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
@@ -71,7 +75,7 @@
         if (!password_verify($password, $hash_password)) 
             echo "Incorrect password";
         else {
-            $_SESSION["user_id"] = $id;
+            // $_SESSION["user_id"] = $id;
             $_SESSION["username"] = $username;
 
             header("Location: ../home/index.php");
