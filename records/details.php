@@ -7,7 +7,41 @@
         exit();
     }
 
-    $id = null;
+    $id = 0;
+    $district = "";
+    $city = "";
+    $tvi = "";
+    $qualification_title = "";
+    $sector = "";
+    $full_name = "";
+    $sex = "";
+    $birthdate = "";
+    $contact_number = "";
+    $email = "";
+    $scholarship_type = "";
+    $address = "";
+    $allocation = "";
+
+    $verification_means = "";
+    $verification_date = "";
+    $verification_status = "";
+    $follow_up_date_1 = "";
+    $follow_up_date_2 = "";
+    $response_status = "";
+    $not_interested_reason = "";
+    $referral_status = "";
+    $referral_date = "";
+    $no_referral_reason = "";
+    $invalid_contact = "";
+
+    $company_name = "";
+    $company_address = "";
+    $job_title = "";
+    $employment_status = "";
+    $hired_date = "";
+    $submitted_documents_date = "";
+    $interview_date = "";
+    $not_hired_reason = "";
 
     if ($_SERVER["REQUEST_METHOD"] === "GET") {
         if (!isset($_GET["id"])) {
@@ -15,7 +49,59 @@
             exit();
         }
 
+        $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+        if ($connection->connect_error) 
+            die("Connection failed: " . $connection->connect_error);
+
         $id = $_GET["id"];
+        $sql = "CALL read_details($id)";
+        $result = mysqli_query($connection, $sql);
+        
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+
+            $district = $row["district"];
+            $city = $row["city"];
+            $tvi = $row["tvi"];
+            $qualification_title = $row["qualification_title"];
+            $sector = $row["sector"];
+            $full_name = $row["full_name"];
+            $sex = $row['sex'];
+            $birthdate = $row["birthdate"];
+            $contact_number = $row["contact_number"];
+            $email = $row["email"];
+            $scholarship_type = $row["scholarship_type"];
+            $address = $row["address"];
+            $allocation = $row["allocation"];
+
+            $verification_means = $row["verification_means"];
+            $verification_date = $row["verification_date"];
+            $verification_status = $row["verification_status"];
+            $follow_up_date_1 = $row["follow_up_date_1"];
+            $follow_up_date_2 = $row["follow_up_date_2"];
+            $response_status = $row["response_status"];
+            $not_interested_reason = $row["not_interested_reason"];
+            $referral_status = $row["referral_status"];
+            $referral_date = $row["referral_date"];
+            $no_referral_reason = $row["no_referral_reason"];
+            $invalid_contact = $row["invalid_contact"];
+
+            $company_name = $row["company_name"];
+            $company_address = $row["company_address"];
+            $job_title = $row["job_title"];
+            $employment_status = $row["employment_status"];
+            $hired_date = $row["hired_date"];
+            $submitted_documents_date = $row["submitted_documents_date"];
+            $interview_date = $row["interview_date"];
+            $not_hired_reason = $row["not_hired_reason"];
+
+            mysqli_close($connection);
+        }
+        else {
+            header("Location: ../records/index.php");
+            mysqli_close($connection);
+            exit();
+        }
     }
 ?>
 <!DOCTYPE html>
@@ -55,79 +141,133 @@
         <div id="details" class="tabcontent">
             <dl>
                 <dt>Name: </dt>
-                <dd>@Model.full_name</dd>
+                <dd><?php echo $full_name ?></dd>
                 <dt>Sex: </dt>
-                <dd>@Model.sex</dd>
+                <dd><?php echo $sex ?></dd>
                 <dt>Date of Birth: </dt>
-                <dd class="dateFormat">2001-07-03</dd>
+                <dd class="dateFormat"><?php echo $birthdate ?></dd>
                 <dt>Contact Number: </dt>
-                <dd>@Model.contact_number</dd>
+                <dd><?php echo $contact_number ?></dd>
                 <dt>E-mail Address: </dt>
-                <dd>@Model.email</dd>
+                <dd><?php echo $email ?></dd>
                 <dt>Address: </dt>
-                <dd>@Model.address</dd>
+                <dd><?php echo $address ?></dd>
                 <dt>Sector: </dt>
-                <dd>@Model.sector</dd>
+                <dd><?php echo $sector ?></dd>
                 <dt>Qualification Title: </dt>
-                <dd>@Model.qualification_title</dd>
+                <dd><?php echo $qualification_title ?></dd>
                 <dt>District: </dt>
-                <dd>@Model.district</dd>
+                <dd><?php echo $district ?></dd>
                 <dt>City: </dt>
-                <dd>@Model.city</dd>
+                <dd><?php echo $city ?></dd>
                 <dt>Type of Scholarship: </dt>
-                <dd>@Model.scholarship_type</dd>
+                <dd><?php echo $scholarship_type ?></dd>
                 <dt>Name of TVI: </dt>
-                <dd>@Model.tvi</dd>
+                <dd><?php echo $tvi ?></dd>
                 <dt>Year of Graduation: </dt>
-                <dd>@Model.allocation</dd>
+                <dd><?php echo $allocation ?></dd>
             </dl>
         </div>
         <div id="verification" class="tabcontent" style="font-size: 1.3em;">
             <dl>
                 <dt>Means of Verification: </dt>
-                <dd>@Model.verification_means</dd>
+                <dd><?php echo $verification_means ?></dd>
                 <dt>Date of Verification: </dt>
-                <dd class="dateFormat">2001-07-03</dd>
+                <dd class="dateFormat"><?php echo $verification_date ?></dd>
                 <dt>Status of Verification: </dt>
-                <dd id="verification_status">@Model.verification_status</dd>
-                <dt>Status of Response: </dt>
-                <dd>@Model.response_status</dd>
-                <dt>Refer to Company? </dt>
-                <dd id="referralStatus">@Model.referral_status</dd>
-                <dt>Date of Referral: </dt>
-                <dd class="dateFormat">2001-07-03</dd>
-                <dt>Reason (No Referral): </dt>
-                <dd>@Model.no_referral_reason</dd>
-                <dt>Reason (Not Interested): </dt>
-                <dd>@Model.not_interested_reason</dd>
-                <dt>First Follow-up Date: </dt>
-                <dd class="dateFormat">2001-07-03</dd>
-                <dt>Second Follow-up Date: </dt>
-                <dd class="dateFormat">2001-07-03</dd>
-                <dt>Invalid Contact? </dt>
-                <dd>@Model.invalid_contact</dd>
+                <dd id="verification_status"><?php echo $verification_status ?></dd>
+                <?php
+                    switch ($verification_status) {
+                        case "Responded":
+                            echo "
+                            <dt>Status of Response: </dt>
+                            <dd>$response_status</dd>
+                            ";
+                            
+                            switch ($response_status) {
+                                case "Interested":
+                                    echo "
+                                    <dt>Refer to Company? </dt>
+                                    <dd id='referralStatus'>$referral_status</dd>
+                                    ";
+
+                                    if ($referral_status === "Yes") {
+                                        echo "
+                                        <dt>Date of Referral: </dt>
+                                        <dd class='dateFormat'>$referral_date</dd>
+                                        ";
+                                    }
+                                    else {
+                                        echo "
+                                        <dt>Reason (No Referral): </dt>
+                                        <dd>$no_referral_reason</dd>
+                                        ";
+                                    }
+
+                                case "Not Interested":
+                                    echo "
+                                    <dt>Reason (Not Interested): </dt>
+                                    <dd>$not_interested_reason</dd>
+                                    ";
+                                    break;
+                            }
+                            break;
+
+                        case "Not Responded":
+                            echo "
+                            <dt>First Follow-up Date: </dt>
+                            <dd class='dateFormat'>$follow_up_date_1</dd>
+                            <dt>Second Follow-up Date: </dt>
+                            <dd class='dateFormat'>$follow_up_date_2</dd>
+                            <dt>Invalid Contact? </dt>
+                            <dd>$invalid_contact</dd>
+                            ";
+                            break;
+                    }
+                ?>
             </dl>
         </div>
         <div id="employment" class="tabcontent" style="font-size: 1.3em;">
             <dl>
                 <dt>Company Name: </dt>
-                <dd>@Model.company_name</dd>
+                <dd><?php echo $company_name ?></dd>
                 <dt>Company Address: </dt>
-                <dd>@Model.company_address</dd>
+                <dd><?php echo $company_address ?></dd>
                 <dt>Job Title: </dt>
-                <dd>@Model.job_title</dd>
+                <dd><?php echo $job_title ?></dd>
                 <dt>Status of Employment: </dt>
-                <dd>@Model.employment_status</dd>
-                <dt>Date Hired: </dt>
-                <dd class="dateFormat">@Model.hired_date</dd>
-                <dt>Submission of Documents Date: </dt>
-                <dd class="dateFormat">@Model.submitted_documents_date</dd>
-                <dt>Interview Date: </dt>
-                <dd class="dateFormat">@Model.interview_date</dd>
-                <dt>Reason (Not Hired): </dt>
-                <dd>@Model.not_hired_reason</dd>
-                <dt>Error: </dt>
-                <dd>Unknown status</dd>
+                <dd><?php echo $employment_status ?></dd>
+                <?php
+                    switch ($employment_status) {
+                        case "Hired":
+                            echo "
+                            <dt>Date Hired: </dt>
+                            <dd class='dateFormat'>$hired_date</dd>
+                            ";
+                            break;
+                        
+                        case "Submitted Documents":
+                            echo "
+                            <dt>Submission of Documents Date: </dt>
+                            <dd class='dateFormat'>$submitted_documents_date</dd>
+                            ";
+                            break;
+
+                        case "For Interview":
+                            echo "
+                            <dt>Interview Date: </dt>
+                            <dd class='dateFormat'>$interview_date</dd>
+                            ";
+                            break;
+
+                        case "Not Hired":
+                            echo "
+                            <dt>Reason (Not Hired): </dt>
+                            <dd>$not_hired_reason</dd>
+                            ";
+                            break;
+                    }
+                ?>
             </dl>
         </div>
         <!-- Modal -->

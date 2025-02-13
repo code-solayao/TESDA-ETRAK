@@ -53,9 +53,10 @@
 
     $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
     $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+    $id = null;
+    $hash_password = null;
 
     $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
-
     if ($connection->connect_error) 
         die("Connection failed: " . $connection->connect_error);
 
@@ -66,7 +67,6 @@
 
     if ($sql->num_rows === 0) {
         echo "User not found";
-        return;
     }
     else {
         $sql->bind_result($id, $hash_password);

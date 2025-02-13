@@ -56,7 +56,6 @@
     $hash_password = password_hash($password, PASSWORD_DEFAULT);
 
     $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
-
     if ($connection->connect_error) 
         die("Connection failed: " . $connection->connect_error);
 

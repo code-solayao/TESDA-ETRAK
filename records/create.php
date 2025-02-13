@@ -6,6 +6,92 @@
         header("Location: ../login/index.php");
         exit();
     }
+
+    $validation_message = "";
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if (isset($_POST["submit"])) {
+            create_entry($validation_message);
+        }
+    }
+
+    function create_entry(&$validation_message) {
+        $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
+        $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
+        $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
+        $extension_name = filter_input(INPUT_POST, "extension_name", FILTER_SANITIZE_SPECIAL_CHARS);
+        $full_name = full_name_format($last_name, $first_name, $middle_name, $extension_name);
+        $sex = filter_input(INPUT_POST, "sex", FILTER_SANITIZE_SPECIAL_CHARS);
+        $birthdate = filter_input(INPUT_POST, "birthdate", FILTER_SANITIZE_SPECIAL_CHARS);
+        $contact_number = filter_input(INPUT_POST, "contact_number", FILTER_SANITIZE_SPECIAL_CHARS);
+        $address = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+        $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL);
+        $sector = filter_input(INPUT_POST, "sector", FILTER_SANITIZE_SPECIAL_CHARS);
+        $qualification_title = filter_input(INPUT_POST, "qualification_title", FILTER_SANITIZE_SPECIAL_CHARS);
+        $district = filter_input(INPUT_POST, "district", FILTER_SANITIZE_SPECIAL_CHARS);
+        $city = filter_input(INPUT_POST, "city", FILTER_SANITIZE_SPECIAL_CHARS);
+        $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
+        $tvi = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+        $graduation_year = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
+        $allocation = "FY " . $graduation_year;
+
+        $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+        if ($connection->connect_error) 
+            die("Connection failed: " . $connection->connect_error);
+    
+        if (check_existing_name($full_name, $connection)) {
+            $validation_message = "This entry name already exists. Please enter another name.";
+            return;
+        }
+    
+        $sql = "CALL create_entry('$district', '$city', '$tvi', '$qualification_title', '$sector', '$last_name', '$first_name', '$middle_name', '$extension_name', '$full_name', 
+                                    '$sex', '$birthdate', '$contact_number', '$email', '$scholarship_type', '$address', '$allocation', 'asfsdsf');";
+
+        try {
+            mysqli_query($connection, $sql);
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit();
+        } 
+        catch (mysqli_sql_exception) {
+            $validation_message = "Database error: " . $connection->error;
+        }
+    }
+
+    function full_name_format($last_name, $first_name, $middle_name, $extension_name) {
+        $format = "";
+
+        if (empty($middle_name) && empty($extension_name)) {
+            $format = $last_name . ", " . $first_name;
+        } 
+        else if (empty($extension_name)) {
+            $format = "$last_name, $first_name $middle_name";
+        } 
+        else if (empty($middle_name)) {
+            $format = "$last_name $extension_name, $first_name";
+        } 
+        else {
+            $format = "$last_name $extension_name, $first_name $middle_name";
+        }
+
+        return $format;
+    }
+
+    function check_existing_name($full_name, $connection) {
+        $sql = $connection->prepare("CALL check_fullname(?);");
+        $sql->bind_param("s", $full_name);
+        $sql->execute();
+        $sql->store_result();
+
+        if ($sql->num_rows === 0) {
+            $sql->close();
+            return false;
+        }
+        else {
+            $sql->close();
+            return true;
+        }
+    }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,15 +113,23 @@
             </div>
             <div class="container mt-4">
                 <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
-                    <!-- <div asp-validation-summary="All" class="text-danger"></div> -->
+                    <?php 
+                        if (!empty($validation_message)) { 
+                            echo "
+                            <div class='alert alert-danger' role='alert'>
+                                $validation_message
+                            </div>
+                            ";
+                        }
+                    ?>
                     <!-- FULL NAME -->
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">Last Name</label>
-                        <input class="form-control" type="text" name="last_name" placeholder="Enter last name" />
+                        <input class="form-control" type="text" name="last_name" placeholder="Enter last name" required" />
                     </div>
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">First Name</label>
-                        <input class="form-control" type="text" name="first_name" placeholder="Enter first name" />
+                        <input class="form-control" type="text" name="first_name" placeholder="Enter first name" required />
                     </div>
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">Middle Name</label>
@@ -68,7 +162,7 @@
                     </div>
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">Contact Number</label>
-                        <input class="form-control" type="text" name="contact_number" placeholder="0900-000-0000" />
+                        <input class="form-control" type="text" name="contact_number" minlength="13" maxlength="16" placeholder="0900-000-0000" />
                     </div>
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">Address</label>
@@ -169,7 +263,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <input class="btn btn-primary" type="submit" value="Submit" role="button" />
+                        <input class="btn btn-primary" type="submit" name="submit" value="Submit" role="button" />
                         <a class="btn btn-secondary" href="../records/index.php" role="button">Cancel</a>
                     </div>
                 </form>
@@ -185,6 +279,3 @@
     <script src="../wwwroot/js/records/create.js"></script>
 </body>
 </html>
-<?php
-    //for the meantime
-?>
