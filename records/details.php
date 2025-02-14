@@ -7,9 +7,9 @@
         exit();
     }
 
-    $db_server = "localhost";
-    $db_user = "root";
-    $db_password = "";
+    $db_server = "192.168.1.107";
+    $db_user = "TESDA-NCR";
+    $db_password = "serverdb@tesdancr2025";
     $database = "tesda_etrak_db";
 
     $id = 0;

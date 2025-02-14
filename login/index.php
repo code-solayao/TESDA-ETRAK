@@ -2,9 +2,9 @@
     session_start();
     $_SESSION["username"] = null;
 
-    $db_server = "localhost";
-    $db_user = "root";
-    $db_password = "";
+    $db_server = "192.168.1.107";
+    $db_user = "TESDA-NCR";
+    $db_password = "serverdb@tesdancr2025";
     $database = "tesda_etrak_db";
 ?>
 <!DOCTYPE html>
@@ -63,7 +63,7 @@
     $id = null;
     $hash_password = null;
 
-    $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+    $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
     if ($connection->connect_error) 
         die("Connection failed: " . $connection->connect_error);
 

@@ -2,9 +2,9 @@
     session_start();
     $_SESSION["username"] = null;
 
-    $db_server = "localhost";
-    $db_user = "root";
-    $db_password = "";
+    $db_server = "192.168.1.107";
+    $db_user = "TESDA-NCR";
+    $db_password = "serverdb@tesdancr2025";
     $database = "tesda_etrak_db";
 ?>
 <!DOCTYPE html>
@@ -64,7 +64,7 @@
     if ($connection->connect_error) 
         die("Connection failed: " . $connection->connect_error);
 
-    $sql = "INSERT INTO users (username, password) VALUES ('$username', '$hash_password')";
+    $sql = "CALL create_user('$username', '$hash_password');";
 
     if ($connection->query($sql) === TRUE) {
         echo "Account created successfully";

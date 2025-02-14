@@ -7,14 +7,19 @@
         exit();
     }
 
+    $db_server = "192.168.1.107";
+    $db_user = "TESDA-NCR";
+    $db_password = "serverdb@tesdancr2025";
+    $database = "tesda_etrak_db";
+
     $validation_message = "";
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
         if (isset($_POST["submit"])) {
-            create_entry($validation_message);
+            create_entry($validation_message, $db_server, $db_user, $db_password, $database);
         }
     }
 
-    function create_entry(&$validation_message) {
+    function create_entry(&$validation_message, $db_server, $db_user, $db_password, $database) {
         $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
         $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
         $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
@@ -34,7 +39,7 @@
         $graduation_year = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
         $allocation = "FY " . $graduation_year;
 
-        $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
         if ($connection->connect_error) 
             die("Connection failed: " . $connection->connect_error);
     
