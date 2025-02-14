@@ -30,7 +30,7 @@
         $district = filter_input(INPUT_POST, "district", FILTER_SANITIZE_SPECIAL_CHARS);
         $city = filter_input(INPUT_POST, "city", FILTER_SANITIZE_SPECIAL_CHARS);
         $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
-        $tvi = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+        $tvi = filter_input(INPUT_POST, "tvi", FILTER_SANITIZE_SPECIAL_CHARS);
         $graduation_year = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
         $allocation = "FY " . $graduation_year;
 
@@ -125,7 +125,7 @@
                     <!-- FULL NAME -->
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">Last Name</label>
-                        <input class="form-control" type="text" name="last_name" placeholder="Enter last name" required" />
+                        <input class="form-control" type="text" id="" name="last_name" placeholder="Enter last name" required" />
                     </div>
                     <div class="form-group mb-4">
                         <label class="form-label control-label-1">First Name</label>
