@@ -1,6 +1,11 @@
 <?php
     session_start();
     $_SESSION["username"] = null;
+
+    $db_server = "localhost";
+    $db_user = "root";
+    $db_password = "";
+    $database = "tesda_etrak_db";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +60,7 @@
     $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
     $hash_password = password_hash($password, PASSWORD_DEFAULT);
 
-    $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+    $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
     if ($connection->connect_error) 
         die("Connection failed: " . $connection->connect_error);
 

@@ -1,6 +1,11 @@
 <?php
     session_start();
     $_SESSION["username"] = null;
+
+    $db_server = "localhost";
+    $db_user = "root";
+    $db_password = "";
+    $database = "tesda_etrak_db";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,6 +55,8 @@
         echo "Please fill out all fields <br />";
         return;
     }
+
+    
 
     $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
     $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);

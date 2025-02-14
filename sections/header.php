@@ -1,3 +1,11 @@
+<?php
+    if (isset($_POST["logout"])) {
+        session_unset();
+        session_destroy();
+        header("Location: ../login/index.php");
+        exit();
+    }
+?>
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container-fluid">
@@ -25,12 +33,3 @@
         </div>
     </nav>
 </header>
-<?php
-    if (!isset($_POST["logout"])) 
-        return;
-
-    session_unset();
-    session_destroy();
-    header("Location: ../login/index.php");
-    exit();
-?>

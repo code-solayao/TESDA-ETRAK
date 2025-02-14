@@ -7,6 +7,11 @@
         exit();
     }
 
+    $db_server = "localhost";
+    $db_user = "root";
+    $db_password = "";
+    $database = "tesda_etrak_db";
+
     $id = 0;
     $district = "";
     $city = "";
@@ -49,7 +54,7 @@
             exit();
         }
 
-        $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
         if ($connection->connect_error) 
             die("Connection failed: " . $connection->connect_error);
 
@@ -101,6 +106,32 @@
             header("Location: ../records/index.php");
             mysqli_close($connection);
             exit();
+        }
+    }
+    else if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if (!isset($_GET["id"])) {
+            header("Location: ../records/index.php");
+            exit();
+        }
+
+        if (!isset($_POST["delete"])) 
+            return;
+
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
+        if ($connection->connect_error) 
+            die("Connection failed: " . $connection->connect_error);
+
+        $id = $_GET["id"];
+        $sql = "CALL delete_record($id)";
+
+        try {
+            mysqli_query($connection, $sql);
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit();
+        } 
+        catch (mysqli_sql_exception) {
+            $validation_message = "Database error: " . $connection->error;
         }
     }
 ?>
@@ -203,6 +234,7 @@
                                         <dd>$no_referral_reason</dd>
                                         ";
                                     }
+                                    break;
 
                                 case "Not Interested":
                                     echo "
@@ -213,15 +245,20 @@
                             }
                             break;
 
-                        case "Not Responded":
+                        case "No Response":
                             echo "
                             <dt>First Follow-up Date: </dt>
                             <dd class='dateFormat'>$follow_up_date_1</dd>
                             <dt>Second Follow-up Date: </dt>
                             <dd class='dateFormat'>$follow_up_date_2</dd>
-                            <dt>Invalid Contact? </dt>
-                            <dd>$invalid_contact</dd>
                             ";
+
+                            if (!empty($invalid_contact)) {
+                                echo "
+                                <dt>Invalid Contact? </dt>
+                                <dd>$invalid_contact</dd>
+                                ";
+                            }
                             break;
                     }
                 ?>
@@ -285,7 +322,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
-                            <button type="submit" class="btn btn-danger">Confirm</button>
+                            <button type="submit" class="btn btn-danger" name="delete">Confirm</button>
                         </form>
                     </div>
                 </div>

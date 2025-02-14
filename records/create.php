@@ -44,7 +44,7 @@
         }
     
         $sql = "CALL create_entry('$district', '$city', '$tvi', '$qualification_title', '$sector', '$last_name', '$first_name', '$middle_name', '$extension_name', '$full_name', 
-                                    '$sex', '$birthdate', '$contact_number', '$email', '$scholarship_type', '$address', '$allocation', 'asfsdsf');";
+                                    '$sex', '$birthdate', '$contact_number', '$email', '$scholarship_type', '$address', '$allocation');";
 
         try {
             mysqli_query($connection, $sql);

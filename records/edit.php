@@ -47,6 +47,7 @@
     $interview_date = "";
     $not_hired_reason = "";
 
+    $validation_message = "";
     switch ($_SERVER["REQUEST_METHOD"]) {
         case "GET":
             if (!isset($_GET["id"])) {
@@ -115,7 +116,70 @@
 
         case "POST":
             if (isset($_POST["submit"])) {
+                if (!isset($_GET["id"])) {
+                    header("Location: ../records/index.php");
+                    exit();
+                }
+
+                $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
+                if ($connection->connect_error) 
+                    die("Connection failed: " . $connection->connect_error);
                 
+                $id = $_GET["id"];
+                $district = filter_input(INPUT_POST, "district", FILTER_SANITIZE_SPECIAL_CHARS);
+                $city = filter_input(INPUT_POST, "city", FILTER_SANITIZE_SPECIAL_CHARS);
+                $tvi = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+                $qualification_title = filter_input(INPUT_POST, "qualification_title", FILTER_SANITIZE_SPECIAL_CHARS);
+                $sector = filter_input(INPUT_POST, "sector", FILTER_SANITIZE_SPECIAL_CHARS);
+                $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $extension_name = filter_input(INPUT_POST, "extension_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $full_name = filter_input(INPUT_POST, "full_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $sex = filter_input(INPUT_POST, "sex", FILTER_SANITIZE_SPECIAL_CHARS);
+                $birthdate = filter_input(INPUT_POST, "birthdate", FILTER_SANITIZE_SPECIAL_CHARS);
+                $contact_number = filter_input(INPUT_POST, "contact_number", FILTER_SANITIZE_SPECIAL_CHARS);
+                $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL);
+                $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
+                $address = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+                $allocation = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
+    
+                $verification_means = filter_input(INPUT_POST, "verification_means", FILTER_SANITIZE_SPECIAL_CHARS);
+                $verification_date = filter_input(INPUT_POST, "verification_date", FILTER_SANITIZE_SPECIAL_CHARS);
+                $verification_status = filter_input(INPUT_POST, "verification_status", FILTER_SANITIZE_SPECIAL_CHARS);
+                $follow_up_date_1 = filter_input(INPUT_POST, "follow_up_date_1", FILTER_SANITIZE_SPECIAL_CHARS);
+                $follow_up_date_2 = filter_input(INPUT_POST, "follow_up_date_2", FILTER_SANITIZE_SPECIAL_CHARS);
+                $response_status = filter_input(INPUT_POST, "response_status", FILTER_SANITIZE_SPECIAL_CHARS);
+                $not_interested_reason = filter_input(INPUT_POST, "not_interested_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+                $referral_status = filter_input(INPUT_POST, "referral_status", FILTER_SANITIZE_SPECIAL_CHARS);
+                $referral_date = filter_input(INPUT_POST, "referral_date", FILTER_SANITIZE_SPECIAL_CHARS);
+                $no_referral_reason = filter_input(INPUT_POST, "no_referral_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+                $invalid_contact = filter_input(INPUT_POST, "invalid_contact", FILTER_SANITIZE_SPECIAL_CHARS);
+    
+                $company_name = filter_input(INPUT_POST, "company_name", FILTER_SANITIZE_SPECIAL_CHARS);
+                $company_address = filter_input(INPUT_POST, "company_address", FILTER_SANITIZE_SPECIAL_CHARS);
+                $job_title = filter_input(INPUT_POST, "job_title", FILTER_SANITIZE_SPECIAL_CHARS);
+                $employment_status = filter_input(INPUT_POST, "employment_status", FILTER_SANITIZE_SPECIAL_CHARS);
+                $hired_date = filter_input(INPUT_POST, "hired_date", FILTER_SANITIZE_SPECIAL_CHARS);
+                $submitted_documents_date = filter_input(INPUT_POST, "submitted_documents_date", FILTER_SANITIZE_SPECIAL_CHARS);
+                $interview_date = filter_input(INPUT_POST, "interview_date", FILTER_SANITIZE_SPECIAL_CHARS);
+                $not_hired_reason = filter_input(INPUT_POST, "not_hired_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+            
+                $sql = "CALL update_record('$id', '$verification_means', '$verification_date', '$verification_status', '$follow_up_date_1', '$follow_up_date_2', 
+                                            '$response_status', '$not_interested_reason', '$referral_status', '$referral_date', '$no_referral_reason', 
+                                            '$invalid_contact', '$company_name', '$company_address', '$job_title', '$employment_status', 
+                                            '$hired_date', '$submitted_documents_date', '$interview_date', '$not_hired_reason');";
+
+                try {
+                    mysqli_query($connection, $sql);
+                    header("Location: ../records/index.php");
+                    $connection->close();
+                    exit();
+                } 
+                catch (mysqli_sql_exception) {
+                    $validation_message = "Database error: " . $connection->error;
+                    echo "Database error: " . $connection->error;
+                }
             }
             break;
     }
@@ -144,116 +208,162 @@
                 <button class="tablink" id="verificationTab">Verification</button>
                 <button class="tablink" id="employmentTab">Employment</button>
             </div>
-            <div id="details" class="tabcontent">
-                <dl>
-                    <dt>Name: </dt>
-                    <dd><?php echo $full_name ?></dd>
-                    <dt>Sex: </dt>
-                    <dd><?php echo $sex ?></dd>
-                    <dt>Date of Birth: </dt>
-                    <dd class="dateFormat"><?php echo $birthdate ?></dd>
-                    <dt>Contact Number: </dt>
-                    <dd><?php echo $contact_number ?></dd>
-                    <dt>E-mail Address: </dt>
-                    <dd><?php echo $email ?></dd>
-                    <dt>Address: </dt>
-                    <dd><?php echo $address ?></dd>
-                    <dt>Sector: </dt>
-                    <dd><?php echo $sector ?></dd>
-                    <dt>Qualification Title: </dt>
-                    <dd><?php echo $qualification_title ?></dd>
-                    <dt>District: </dt>
-                    <dd><?php echo $district ?></dd>
-                    <dt>City: </dt>
-                    <dd><?php echo $city ?></dd>
-                    <dt>Type of Scholarship: </dt>
-                    <dd><?php echo $scholarship_type ?></dd>
-                    <dt>Name of TVI: </dt>
-                    <dd><?php echo $tvi ?></dd>
-                    <dt>Year of Graduation: </dt>
-                    <dd><?php echo $allocation ?></dd>
-                </dl>
-            </div>
             <form asp-action="Edit" method="post">
-                <div id="postDetails" class="form-group mb-4">
-                    <input class="form-control" type="number" name="Id" value="<?php echo $id ?>" placeholder="0" />
-                    <input class="form-control" type="text" name="last_name" value="<?php echo $last_name ?>" />
-                    <input class="form-control" type="text" name="first_name" value="<?php echo $first_name ?>" />
-                    <input class="form-control" type="text" name="middle_name" value="<?php echo $middle_name ?>" />
-                    <input class="form-control" type="text" name="extension_name" value="<?php echo $extension_name ?>" />
-                    <input class="form-control" type="text" name="full_name" value="<?php echo $full_name ?>" />
-                    <input class="form-control" type="text" name="sex" value="<?php echo $sex ?>" />
-                    <input class="form-control" type="text" name="birthdate" value="<?php echo $birthdate ?>" />
-                    <input class="form-control" type="text" name="contact_number" value="<?php echo $contact_number ?>" />
-                    <input class="form-control" type="text" name="email" value="<?php echo $email ?>" />
-                    <input class="form-control" type="text" name="address" value="<?php echo $address ?>" />
-                    <input class="form-control" type="text" name="sector" value="<?php echo $sector ?>" />
-                    <input class="form-control" type="text" name="qualification_title" value="<?php echo $qualification_title ?>" />
-                    <input class="form-control" type="text" name="district" value="<?php echo $district ?>" />
-                    <input class="form-control" type="text" name="city" value="<?php echo $city ?>" />
-                    <input class="form-control" type="text" name="scholarship_type" value="<?php echo $scholarship_type ?>" />
-                    <input class="form-control" type="text" name="tvi" value="<?php echo $tvi ?>" />
-                    <input class="form-control" type="text" name="allocation" value="<?php echo $allocation ?>" />
+                <div id="details" class="tabcontent">
+                    <fieldset disabled>
+                        <!-- FULL NAME -->
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Last Name</label>
+                            <input class="form-control" type="text" name="last_name" value="<?php echo $last_name ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">First Name</label>
+                            <input class="form-control" type="text" name="first_name" value="<?php echo $first_name ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Middle Name</label>
+                            <input class="form-control" type="text" name="middle_name" value="<?php echo $middle_name ?>" />
+                        </div>
+                        <div class="form-group mb-5">
+                            <label class="form-label control-label-2">Extension Name</label>
+                            <input class="form-control" type="text" name="extension_name" value="<?php echo $extension_name ?>" />
+                        </div>
+                        <div class="form-group mb-5">
+                            <label class="form-label control-label-2">Full Name</label>
+                            <input class="form-control" type="text" name="full_name" value="<?php echo $full_name ?>" />
+                        </div>
+                        <!-- INITIAL DATA -->
+                        <div class="form-group mb-3">
+                            <label class="form-label control-label-2">Sex</label>
+                            <input class="form-control" type="text" name="sex" value="<?php echo $sex ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Date of Birth</label>
+                            <input class="form-control" type="text" name="birthdate" value="<?php echo $birthdate ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Contact Number</label>
+                            <input class="form-control" type="text" name="contact_number" value="<?php echo $contact_number ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Address</label>
+                            <input class="form-control" type="text" row="5" name="address" value="<?php echo $address ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">E-mail Address</label>
+                            <input class="form-control" type="email" name="email" value="<?php echo $email ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Sector</label>
+                            <input class="form-control" type="text" name="sector" value="<?php echo $sector ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Qualification Title</label>
+                            <input class="form-control" type="text" name="qualification_title" value="<?php echo $qualification_title ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">District</label>
+                            <input class="form-control" type="text" name="district" value="<?php echo $district ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">City</label>
+                            <input class="form-control" type="text" name="city" value="<?php echo $city ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Type of Scholarship</label>
+                            <input class="form-control" type="text" name="scholarship_type" value="<?php echo $scholarship_type ?>" />
+                        </div>
+                        <div class="form-group mb-4">
+                            <label class="form-label control-label-2">Name of TVI</label>
+                            <input class="form-control" type="text" name="tvi" value="<?php echo $tvi ?>" />
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="form-label control-label-2">Allocation</label>
+                            <input class="form-control" type="text" name="allocation" value="<?php echo $allocation ?>" />
+                        </div>
+                    </fieldset>
                 </div>
                 <div id="verification" class="tabcontent">
                     <div class="container">
-                        <!-- <div asp-validation-summary="All" class="text-danger"></div> -->
+                        <?php 
+                            if (!empty($validation_message)) { 
+                                echo "
+                                <div class='alert alert-danger' role='alert'>
+                                    $validation_message
+                                </div>
+                                ";
+                            }
+                        ?>
                         <div class="form-group mb-4">
-                            <label asp-for="@Model.verification_means" class="form-label control-label-1">Means of Verification</label>
-                            <select asp-for="@Model.verification_means" class="form-control">
-                                <option value="">None</option>
-                                <option value="For Verification">For Verification</option>
-                                <option value="Phone-called">Phone-called</option>
-                                <option value="E-mailed">E-mailed</option>
-                                <option value="SMS">SMS</option>
+                            <label class="form-label control-label-1" for="verification_means">Means of Verification</label>
+                            <select class="form-control" id="verification_means" name="verification_means">
+                                <?php
+                                    $verifmeans_options = ["None", "For Verification", "Phone-called", "E-mailed", "SMS"];
+                                    foreach ($verifmeans_options as $option) { ?>
+                                    <option value="<?php echo $option; ?>" <?php echo ($option == $verification_means) ? 'selected' : ''; ?>>
+                                        <?php echo ucfirst($option); ?>
+                                    </option>
+                                <?php } ?>
                             </select>
                         </div>
                         <div class="form-group mb-4">
-                            <label asp-for="@Model.verification_date" class="form-label control-label-1">Date of Verification</label>
-                            <input asp-for="@Model.verification_date" class="form-control" type="date" />
+                            <label class="form-label control-label-1" for="verification_date">Date of Verification</label>
+                            <input class="form-control" type="date" id="verification_date" name="verification_date" value="<?php echo $verification_date ?>" />
                         </div>
                         <div class="form-group">
-                            <label asp-for="@Model.verification_status" class="form-label control-label-1">Status of Verification</label>
+                            <label class="form-label control-label-1" for="respondedBtn">Status of Verification</label>
 
                             <div class="form-check">
-                                <input asp-for="@Model.verification_status" class="form-check-input" type="radio" value="Responded" id="respondedBtn" />
-                                <label asp-for="@Model.verification_status" class="form-label">Responded</label>
+                                <?php
+                                    $responded = "Responded";
+                                    $no_response = "No Response"; 
+                                ?>
+                                <input class="form-check-input" type="radio" id="respondedBtn" name="verification_status" value="Responded" <?php echo ($verification_status == $responded) ? 'checked' : ''; ?> />
+                                <label class="form-label" for="respondedBtn">Responded</label>
                                 <br />
-                                <input asp-for="@Model.verification_status" class="form-check-input" type="radio" value="No Response" id="noResponseBtn" />
-                                <label asp-for="@Model.verification_status" class="form-label">No Response</label>
+                                <input class="form-check-input" type="radio" id="noResponseBtn" name="verification_status" value="No Response" <?php echo ($verification_status == $no_response) ? 'checked' : ''; ?> />
+                                <label class="form-label" for="noResponseBtn">No Response</label>
                             </div>
                         </div>
                         <div class="verification-status-div mb-4" id="responded">
                             <div class="form-group">
-                                <label asp-for="@Model.response_status" class="form-label control-label-1">Type of Response</label>
+                                <label class="form-label control-label-1">Type of Response</label>
 
                                 <div style="margin-left: 30px" class="form-check">
-                                    <input asp-for="@Model.response_status" class="form-check-input" type="radio" value="Interested" id="interestedBtn" />
-                                    <label asp-for="@Model.response_status" class="form-label">Interested</label>
+                                    <?php
+                                        $interested = "Interested";
+                                        $not_interested = "Not Interested";
+                                    ?>
+                                    <input class="form-check-input" type="radio" id="interestedBtn" name="response_status" value="Interested" <?php echo ($response_status == $interested) ? 'checked' : ''; ?> />
+                                    <label class="form-label" for="interestedBtn">Interested</label>
                                     <div>
-                                        <label asp-for="@Model.referral_status" class="form-label control-label-2">Refer to Company?</label>
+                                        <label class="form-label control-label-2">Refer to Company?</label>
 
                                         <div style="margin-left: 30px">
                                             <fieldset id="referralStatusForm" disabled>
-                                                <input asp-for="@Model.referral_status" class="form-check-input" type="radio" value="Yes" id="referYesBtn" />
-                                                <label asp-for="@Model.referral_status" class="form-label">YES</label>
+                                                <?php
+                                                    $yes = "Yes";
+                                                    $no = "No";
+                                                ?>
+                                                <input class="form-check-input" type="radio" id="referYesBtn" name="referral_status" value="Yes" <?php echo ($referral_status == $yes) ? 'checked' : ''; ?> />
+                                                <label class="form-label" for="referYesBtn">YES</label>
                                                 <br />
-                                                <input asp-for="@Model.referral_date" class="form-control" type="date" id="referralDate" disabled />
+                                                <input class="form-control" type="date" id="referralDate" name="referral_date" value="<?php echo $referral_date ?>" disabled />
                                                 <br />
-                                                <input asp-for="@Model.referral_status" class="form-check-input" type="radio" value="No" id="referNoBtn" />
-                                                <label asp-for="@Model.referral_status" class="form-label">NO</label>
+                                                <input class="form-check-input" type="radio" id="referNoBtn" name="referral_status" value="No" <?php echo ($referral_status == $no) ? 'checked' : ''; ?> />
+                                                <label class="form-label" for="referNoBtn">NO</label>
                                                 <br />
-                                                <label asp-for="@Model.no_referral_reason" class="form-label">Reason</label>
-                                                <input asp-for="@Model.no_referral_reason" class="form-control" type="text" id="noReferralReason" disabled />
+                                                <label class="form-label" for="noReferralReason">Reason</label>
+                                                <input class="form-control" type="text" id="noReferralReason" name="no_referral_reason" value="<?php echo $no_referral_reason ?>" disabled />
                                             </fieldset>
                                         </div>
                                     </div><br />
 
-                                    <input asp-for="@Model.response_status" class="form-check-input" type="radio" value="Not Interested" id="notInterestedBtn" />
-                                    <label asp-for="@Model.response_status" class="form-label">Not Interested</label>
+                                    <input class="form-check-input" type="radio" id="notInterestedBtn" name="response_status" value="Not Interested" <?php echo ($response_status == $not_interested) ? 'checked' : ''; ?> />
+                                    <label class="form-label" for="notInterestedBtn">Not Interested</label>
                                     <div>
-                                        <label asp-for="@Model.not_interested_reason" class="form-label">Reason</label>
-                                        <input asp-for="@Model.not_interested_reason" class="form-control" type="text" row="5" id="notInterestedReason" disabled />
+                                        <label class="form-label" for="notInterestedBtn">Reason</label>
+                                        <input class="form-control" type="text" row="5" id="notInterestedReason" name="not_interested_reason" value="<?php echo $not_interested_reason ?>" disabled />
                                     </div>
                                 </div>
                             </div>
@@ -263,77 +373,93 @@
                                 <label class="form-label control-label-2">No Response (For Follow-up)</label>
 
                                 <div style="margin-left: 30px" class="mb-4">
-                                    <label asp-for="@Model.follow_up_date_1" class="form-label">First Follow-up</label>
-                                    <input asp-for="@Model.follow_up_date_1" class="form-control" type="date" id="followup1" />
+                                    <label class="form-label" for="followup1">First Follow-up</label>
+                                    <input class="form-control" type="date" id="followup1" name="follow_up_date_1" value="<?php echo $follow_up_date_1 ?>" />
                                 </div>
                                 <div style="margin-left: 30px" class="mb-4">
-                                    <label asp-for="@Model.follow_up_date_2" class="form-label">Second Follow-up</label>
-                                    <input asp-for="@Model.follow_up_date_2" class="form-control" type="date" id="followup2" />
+                                    <label class="form-label" for="followup2">Second Follow-up</label>
+                                    <input class="form-control" type="date" id="followup2" name="follow_up_date_2" value="<?php echo $follow_up_date_2 ?>" />
                                 </div>
                                 <div style="margin-left: 30px" class="form-check mb-4">
-                                    <input asp-for="@Model.invalid_contact" class="form-check-input" type="checkbox" id="invalidContact" />
-                                    <label asp-for="@Model.invalid_contact" class="form-check-label">Invalid Contact</label>
+                                    <input class="form-check-input" type="checkbox" id="invalidContact" name="invalid_contact" value="Yes" <?php echo ($invalid_contact == "Yes") ? 'checked' : '' ?> />
+                                    <label class="form-check-label" for="invalidContact">Invalid Contact</label>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                            <a asp-controller="Records" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
+                            <input class="btn btn-primary" type="submit" role="button" name="submit" value="Submit" />
+                            <a class="btn btn-secondary" role="button" href="../records/details.php?id=<?php echo $id ?>">Cancel</a>
                         </div>
                     </div>
                 </div>
                 <div id="employment" class="tabcontent">
                     <div class="container">
-                        <div asp-validation-summary="All" class="text-danger"></div>
+                        <?php 
+                            if (!empty($validation_message)) { 
+                                echo "
+                                <div class='alert alert-danger' role='alert'>
+                                    $validation_message
+                                </div>
+                                ";
+                            }
+                        ?>
                         <fieldset id="employmentField" disabled>
                             <div class="form-group mb-4">
-                                <label asp-for="@Model.company_name" class="form-label control-label-1">Name of Company</label>
-                                <input asp-for="@Model.company_name" class="form-control" type="text" id="companyName" />
+                                <label class="form-label control-label-1" for="companyName">Name of Company</label>
+                                <input class="form-control" type="text" id="companyName" name="company_name" value="<?php echo $company_name ?>" />
                             </div>
                             <div class="form-group mb-4">
-                                <label asp-for="@Model.company_address" class="form-label control-label-1">Address</label>
-                                <input asp-for="@Model.company_address" class="form-control" type="text" row="5" id="companyAddress" />
+                                <label class="form-label control-label-1" for="companyAddress">Address</label>
+                                <input class="form-control" type="text" row="5" id="companyAddress" name="company_address" value="<?php echo $company_address ?>" />
                             </div>
                             <div class="form-group mb-4">
-                                <label asp-for="@Model.job_title" class="form-label control-label-1">Job Title</label>
-                                <input asp-for="@Model.job_title" class="form-control" type="text" id="jobTitle" />
+                                <label class="form-label control-label-1" for="jobTitle">Job Title</label>
+                                <input class="form-control" type="text" id="jobTitle" name="job_title" value="<?php echo $job_title ?>" />
                             </div>
                             <div class="form-group mb-4">
                                 <label class="form-label control-label-1">Employment Status</label>
 
                                 <div class="form-check">
-                                    <input asp-for="@Model.employment_status" class="form-check-input" type="radio" value="Hired" id="hired" />
-                                    <label asp-for="@Model.employment_status" class="form-label employment-status-label">Hired</label>
+                                    <?php
+                                        $hired = "Hired";
+                                        $submit_docs = "Submitted Documents";
+                                        $for_interview = "For Interview";
+                                        $not_hired = "Not Hired";
+                                    ?>
+                                    <input class="form-check-input" type="radio" id="hired" name="employment_status" value="Hired" <?php echo ($employment_status == $hired) ? 'checked' : '' ?> />
+                                    <label class="form-label employment-status-label" for="hired">Hired</label>
                                     <div class="indent mb-4">
-                                        <input asp-for="@Model.hired_date" class="form-control" type="date" id="hiredDate" disabled />
+                                        <input class="form-control" type="date" id="hiredDate" name="hired_date" value="<?php echo $hired_date ?>" disabled />
                                     </div>
-                                    <input asp-for="@Model.employment_status" class="form-check-input" type="radio" value="Submitted Documents" id="submitDocs" />
-                                    <label asp-for="@Model.employment_status" class="form-label employment-status-label">Submitted Documents</label>
+                                    <input class="form-check-input" type="radio" id="submitDocs" name="employment_status" value="Submitted Documents" <?php echo ($employment_status == $submit_docs) ? 'checked' : '' ?> />
+                                    <label class="form-label employment-status-label" for="submitDocs">Submitted Documents</label>
                                     <div class="indent-1 mb-4">
-                                        <input asp-for="@Model.submitted_documents_date" class="form-control" type="date" id="submitDocsDate" disabled />
+                                        <input class="form-control" type="date" id="submitDocsDate" name="submitted_documents_date" value="<?php echo $submitted_documents_date ?>" disabled />
                                     </div>
-                                    <input asp-for="@Model.employment_status" class="form-check-input" type="radio" value="For Interview" id="forInterview" />
-                                    <label asp-for="@Model.employment_status" class="form-label employment-status-label">For Interview</label>
+                                    <input class="form-check-input" type="radio" id="forInterview" name="employment_status" value="For Interview" <?php echo ($employment_status == $for_interview) ? 'checked' : '' ?> />
+                                    <label class="form-label employment-status-label" for="forInterview">For Interview</label>
                                     <div class="indent-1 mb-4">
-                                        <input asp-for="@Model.interview_date" class="form-control" type="date" id="interviewDate" disabled />
+                                        <input class="form-control" type="date" id="interviewDate" name="interview_date" value="<?php echo $interview_date ?>" disabled />
                                     </div>
-                                    <input asp-for="@Model.employment_status" class="form-check-input" type="radio" value="Not Hired" id="notHired" />
-                                    <label asp-for="@Model.employment_status" class="form-label employment-status-label">Not Hired</label>
+                                    <input class="form-check-input" type="radio" id="notHired" name="employment_status" value="Not Hired" <?php echo ($employment_status == $hired) ? 'checked' : '' ?> />
+                                    <label class="form-label employment-status-label" for="notHired">Not Hired</label>
                                     <div class="indent-1 mb-4">
-                                        <label asp-for="@Model.not_hired_reason" class="form-label">Reason</label>
-                                        <select asp-for="@Model.not_hired_reason" class="form-control" id="notHiredReason" disabled>
-                                            <option value="">None</option>
-                                            <option value="Underage">Underage</option>
-                                            <option value="Upskilling">Upskilling</option>
-                                            <option value="Lack of experience">Lack of experience</option>
-                                            <option value="Did not meet the requirements">Did not meet the requirements</option>
+                                        <label class="form-label" for="notHiredReason">Reason</label>
+                                        <select class="form-control" id="notHiredReason" name="not_hired_reason" disabled>
+                                            <?php
+                                                $not_hired_reasons = ["None", "Underage", "Upskilling", "Lack of Experience", "Did not meet the requirements"];
+                                                foreach ($not_hired_reasons as $reason) { ?>
+                                                <option value="<?php echo $reason; ?>" <?php echo ($reason == $not_hired_reason) ? 'selected' : ''; ?>>
+                                                    <?php echo ucfirst($reason); ?>
+                                                </option>
+                                            <?php } ?>
                                         </select>
                                     </div>
                                 </div>
                             </div>
                             <div>
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                                <a asp-controller="Records" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
+                                <input class="btn btn-primary" type="submit" role="button" name="submit" value="Submit" />
+                                <a class="btn btn-secondary" role="button" href="../records/details.php?id=<?php echo $id ?>">Cancel</a>
                             </div>
                         </fieldset>
                     </div>

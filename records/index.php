@@ -6,6 +6,31 @@
         header("Location: ../login/index.php");
         exit();
     }
+
+    $db_server = "localhost";
+    $db_user = "root";
+    $db_password = "";
+    $database = "tesda_etrak_db";
+
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        if (!isset($_POST["delete_all"])) {
+            $validation_message = "Cannot process action.";
+            return;
+        }
+
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
+        if ($connection->connect_error) 
+            die("Connection failed: " . $connection->connect_error);
+        
+        $sql = "CALL delete_records_all()";
+        try {
+            mysqli_query($connection, $sql);
+            $connection->close();
+        } 
+        catch (mysqli_sql_exception) {
+            $validation_message = "Database error: " . $connection->error;
+        }
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,15 +85,14 @@
                     </thead>
                     <tbody>
                         <?php
-                            $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
-
+                            $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
                             if ($connection->connect_error) 
                                 die("Connection failed: " . $connection->connect_error);
-
+                            
                             $sql = $connection->prepare("SELECT * FROM graduates");
                             $sql->execute();
                             $result = $sql->get_result();
-
+                
                             if (!$result) 
                                 die("Invalid query: " . $connection->error);
 
@@ -125,12 +149,3 @@
     <script src="../wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-<?php
-    if ($_SERVER["REQUEST_METHOD"] !== "POST") 
-        return;
-
-    if (!isset($_POST["delete_all"])) 
-        return;
-
-    $connection = mysqli_connect("localhost", "root", "", "tesda_etrak_db");
-?>
