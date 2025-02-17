@@ -1,11 +1,22 @@
 <?php
     session_start();
+    $_SESSION["user_id"] = null;
     $_SESSION["username"] = null;
 
-    $db_server = "192.168.1.107";
-    $db_user = "TESDA-NCR";
-    $db_password = "serverdb@tesdancr2025";
-    $database = "tesda_etrak_db";
+    $validation_message = "";
+    include("../sections/database.php");
+    try {
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            create_user($connection, $validation_message);
+        }
+
+        mysqli_close($connection);
+    }
+    catch (mysqli_sql_exception $ex) {
+        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +26,7 @@
     <title>E-TRAK - Create account</title>
     <link rel="stylesheet" href="../wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../wwwroot/css/style.css" />
-    <link rel="stylesheet" href="../wwwroot/css/login/style.css" />
+    <link rel="stylesheet" href="../wwwroot/css/login/style.css"; />
 </head>
 <body>
     <div class="form-box">
@@ -38,6 +49,12 @@
                 <p>Return to <a href="index.php">login</a>.</p>
             </div>
         </form>
+        <?php
+            if (!empty($validation_message)) { ?>
+                <div class="text-center">
+                    <p><?php echo $validation_message ?></p>
+                </div>
+        <?php } ?>
     </div>
     
     <script src="../wwwroot/lib/jquery/dist/jquery.min.js"></script>
@@ -45,32 +62,19 @@
 </body>
 </html>
 <?php
-    if ($_SERVER["REQUEST_METHOD"] !== "POST") 
-        return;
+    function create_user($connection, &$validation_message) {
+        $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+        $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+        $hash_password = password_hash($password, PASSWORD_DEFAULT);
+    
+        $sql = "CALL create_user('$username', '$hash_password');";
 
-    if (!isset($_POST["register"])) 
-        return;
-
-    if (empty($_POST["username"]) || empty($_POST["password"])) {
-        echo "Please fill in all fields <br />";
-        return;
+        try {
+            mysqli_query($connection, $sql);
+            $validation_message = "<strong>Account created successfully!</strong>";
+        }
+        catch (mysqli_sql_exception $ex) {
+            $validation_message = "<strong>Cannot create account.</strong> <br />" . $ex;
+        }
     }
-
-    $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
-    $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
-    $hash_password = password_hash($password, PASSWORD_DEFAULT);
-
-    $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-    if ($connection->connect_error) 
-        die("Connection failed: " . $connection->connect_error);
-
-    $sql = "CALL create_user('$username', '$hash_password');";
-
-    if ($connection->query($sql) === TRUE) {
-        echo "Account created successfully";
-    } else {
-        echo "Error: " . $connection->error;
-    }
-
-    $connection->close();
 ?>

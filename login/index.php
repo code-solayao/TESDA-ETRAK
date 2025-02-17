@@ -1,11 +1,22 @@
 <?php
     session_start();
+    $_SESSION["user_id"] = null;
     $_SESSION["username"] = null;
 
-    $db_server = "192.168.1.107";
-    $db_user = "TESDA-NCR";
-    $db_password = "serverdb@tesdancr2025";
-    $database = "tesda_etrak_db";
+    $validation_message = "";
+    include("../sections/database.php");
+    try {
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            login_user($connection, $validation_message);
+        }
+
+        mysqli_close($connection);
+    }
+    catch (mysqli_sql_exception $ex) {
+        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +49,12 @@
                 <p>Create an account <a href="register.php">here</a>.</p>
             </div>
         </form>
+        <?php
+            if (!empty($validation_message)) { ?>
+                <div class="text-center">
+                    <p><?php echo $validation_message ?></p>
+                </div>
+        <?php } ?>
     </div>
     
     <script src="../wwwroot/lib/jquery/dist/jquery.min.js"></script>
@@ -45,51 +62,37 @@
 </body>
 </html>
 <?php
-    if ($_SERVER["REQUEST_METHOD"] !== "POST") 
-        return;
+    function login_user($connection, &$validation_message) {
+        $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+        $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+        $id = 0;
+        $hash_password = "";
 
-    if (!isset($_POST["login"])) 
-        return;
+        $sql = $connection->prepare("SELECT id, password FROM users WHERE username = ?");
+        $sql->bind_param("s", $username);
+        $sql->execute();
+        $sql->store_result();
 
-    if (empty($_POST["username"]) || empty($_POST["password"])) {
-        echo "Please fill out all fields <br />";
-        return;
-    }
+        if ($sql->num_rows === 0) {
+            $validation_message = "<strong>User not found</strong>";
+            $sql->close();
+            return;
+        }
 
-    
-
-    $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
-    $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
-    $id = null;
-    $hash_password = null;
-
-    $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-    if ($connection->connect_error) 
-        die("Connection failed: " . $connection->connect_error);
-
-    $sql = $connection->prepare("SELECT id, password FROM users WHERE username = ?");
-    $sql->bind_param("s", $username);
-    $sql->execute();
-    $sql->store_result();
-
-    if ($sql->num_rows === 0) {
-        echo "User not found";
-    }
-    else {
         $sql->bind_result($id, $hash_password);
         $sql->fetch();
 
-        if (!password_verify($password, $hash_password)) 
-            echo "Incorrect password";
-        else {
-            // $_SESSION["user_id"] = $id;
-            $_SESSION["username"] = $username;
-
-            header("Location: ../home/index.php");
-            exit();
+        if (!password_verify($password, $hash_password)) {
+            $validation_message = "<strong>Incorrect password</strong>";
+            $sql->close();
+            return;
         }
-    }
 
-    $sql->close();
-    $connection->close();
+        $_SESSION["user_id"] = $id;
+        $_SESSION["username"] = $username;
+        $sql->close();
+
+        header("Location: ../home/index.php");
+        exit();
+    }
 ?>

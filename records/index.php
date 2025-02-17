@@ -1,35 +1,19 @@
 <?php
-    session_start();
-    if (!isset($_SESSION["username"])) {
-        session_unset();
-        session_destroy();
-        header("Location: ../login/index.php");
-        exit();
+    include("../sections/session_manager.php");
+
+    $validation_message = "";
+    include("../sections/database.php");
+    try {
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            delete_records_all($connection, $validation_message);
+        }
+
+        mysqli_close($connection);
     }
-
-    $db_server = "192.168.1.107";
-    $db_user = "TESDA-NCR";
-    $db_password = "serverdb@tesdancr2025";
-    $database = "tesda_etrak_db";
-
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        if (!isset($_POST["delete_all"])) {
-            $validation_message = "Cannot process action.";
-            return;
-        }
-
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-        if ($connection->connect_error) 
-            die("Connection failed: " . $connection->connect_error);
-        
-        $sql = "CALL delete_records_all()";
-        try {
-            mysqli_query($connection, $sql);
-            $connection->close();
-        } 
-        catch (mysqli_sql_exception) {
-            $validation_message = "Database error: " . $connection->error;
-        }
+    catch (mysqli_sql_exception $ex) {
+        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
     }
 ?>
 <!DOCTYPE html>
@@ -69,6 +53,12 @@
                 </div>
             </div>
             <div class="table-responsive table-wrapper">
+                <?php
+                    if (!empty($validation_message)) { ?>
+                        <div class="text-center">
+                            <p><?php echo $validation_message ?></p>
+                        </div>
+                <?php } ?>
                 <table id="recordsTable" class="table table-striped table-hover">
                     <thead>
                         <tr>
@@ -85,37 +75,40 @@
                     </thead>
                     <tbody>
                         <?php
-                            $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-                            if ($connection->connect_error) 
-                                die("Connection failed: " . $connection->connect_error);
-                            
-                            $sql = $connection->prepare("SELECT * FROM graduates");
-                            $sql->execute();
-                            $result = $sql->get_result();
-                
-                            if (!$result) 
-                                die("Invalid query: " . $connection->error);
+                            try {
+                                $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
 
-                            while ($graduate = $result->fetch_assoc()) {
-                                echo "
-                                <tr>
-                                    <td class='table-data'>$graduate[id]</td>
-                                    <td class='table-data'>$graduate[last_name]</td>
-                                    <td class='table-data'>$graduate[first_name]</td>
-                                    <td class='table-data'>$graduate[middle_name]</td>
-                                    <td class='table-data'>$graduate[extension_name]</td>
-                                    <td class='table-data'>$graduate[employment_status]</td>
-                                    <td class='table-data'>$graduate[allocation]</td>
-                                    <td class='table-data'>$graduate[qualification_title]</td>
-                                    <td>
-                                        <a class='btn btn-secondary btn-sm' href='../records/details.php?id=$graduate[id]'>
-                                            <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-book-half' viewBox='0 0 16 16'>
-                                                <path d='M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783' />
-                                            </svg> View
-                                        </a>
-                                    </td>
-                                </tr>
-                                ";
+                                $sql = $connection->prepare("CALL read_records();");
+                                $sql->execute();
+                                $result = $sql->get_result();
+
+                                while ($graduate = $result->fetch_assoc()) { 
+                                    echo "
+                                    <tr>
+                                        <td class='table-data'>$graduate[id]</td>
+                                        <td class='table-data'>$graduate[last_name]</td>
+                                        <td class='table-data'>$graduate[first_name]</td>
+                                        <td class='table-data'>$graduate[middle_name]</td>
+                                        <td class='table-data'>$graduate[extension_name]</td>
+                                        <td class='table-data'>$graduate[employment_status]</td>
+                                        <td class='table-data'>$graduate[allocation]</td>
+                                        <td class='table-data'>$graduate[qualification_title]</td>
+                                        <td>
+                                            <a class='btn btn-secondary btn-sm' href='../records/details.php?id=$graduate[id]'>
+                                                <svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-book-half' viewBox='0 0 16 16'>
+                                                    <path d='M8.5 2.687c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783' />
+                                                </svg> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    ";
+                                }
+
+                                mysqli_close($connection);
+                            }
+                            catch (mysqli_sql_exception $ex) {
+                                $validation_message = "<strong>ERROR! </strong><br />" . $ex;
+                                echo $validation_message;
                             }
                         ?>
                     </tbody>
@@ -135,7 +128,7 @@
                         <div class="modal-footer">
                             <form action="index.php" method="post">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" name="delete_all" class="btn btn-danger">Confirm</button>
+                                <input type="submit" class="btn btn-primary" name="delete_all" value="Confirm" role="button" />
                             </form>
                         </div>
                     </div>
@@ -149,3 +142,17 @@
     <script src="../wwwroot/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<?php
+    function delete_records_all($connection, &$validation_message) {
+        if (!isset($_POST["delete_all"]))
+            return;
+
+        $sql = "CALL delete_records_all()";
+        try {
+            mysqli_query($connection, $sql);
+        } 
+        catch (mysqli_sql_exception) {
+            $validation_message = "Database error: " . $connection->error;
+        }
+    }
+?>
