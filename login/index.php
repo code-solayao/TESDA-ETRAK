@@ -4,18 +4,8 @@
     $_SESSION["username"] = null;
 
     $validation_message = "";
-    include("../sections/database.php");
-    try {
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
-
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            login_user($connection, $validation_message);
-        }
-
-        mysqli_close($connection);
-    }
-    catch (mysqli_sql_exception $ex) {
-        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        login_user($validation_message);
     }
 ?>
 <!DOCTYPE html>
@@ -62,29 +52,38 @@
 </body>
 </html>
 <?php
-    function login_user($connection, &$validation_message) {
+    function login_user(&$validation_message) {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
         $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
         $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
         $id = 0;
         $hash_password = "";
+        $created = null;
 
-        $sql = $connection->prepare("SELECT id, password FROM users WHERE username = ?");
+        $sql = $connection->prepare("CALL login_user(?);");
         $sql->bind_param("s", $username);
         $sql->execute();
         $sql->store_result();
 
         if ($sql->num_rows === 0) {
-            $validation_message = "<strong>User not found</strong>";
+            $validation_message = "<strong>Username not found</strong>";
             $sql->close();
+            $connection->close();
             return;
         }
 
-        $sql->bind_result($id, $hash_password);
+        $sql->bind_result($id, $hash_password, $created);
         $sql->fetch();
 
         if (!password_verify($password, $hash_password)) {
             $validation_message = "<strong>Incorrect password</strong>";
             $sql->close();
+            $connection->close();
             return;
         }
 
@@ -93,6 +92,7 @@
         $sql->close();
 
         header("Location: ../home/index.php");
-        exit();
+        $connection->close();
+        exit;
     }
 ?>

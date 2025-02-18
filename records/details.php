@@ -1,16 +1,5 @@
 <?php
-    session_start();
-    if (!isset($_SESSION["username"])) {
-        session_unset();
-        session_destroy();
-        header("Location: ../login/index.php");
-        exit();
-    }
-
-    $db_server = "192.168.1.107";
-    $db_user = "TESDA-NCR";
-    $db_password = "serverdb@tesdancr2025";
-    $database = "tesda_etrak_db";
+    include("../sections/session_manager.php");
 
     $id = 0;
     $district = "";
@@ -48,23 +37,31 @@
     $interview_date = "";
     $not_hired_reason = "";
 
-    if ($_SERVER["REQUEST_METHOD"] === "GET") {
-        if (!isset($_GET["id"])) {
-            header("Location: ../records/index.php");
-            exit();
+    $validation_message = "";
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        delete_record($validation_message);
+    }
+    else {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
         }
 
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-        if ($connection->connect_error) 
-            die("Connection failed: " . $connection->connect_error);
-
         $id = $_GET["id"];
-        $sql = "CALL read_details($id)";
-        $result = mysqli_query($connection, $sql);
-        
-        if (mysqli_num_rows($result) > 0) {
-            $row = mysqli_fetch_assoc($result);
+        $sql = $connection->prepare("CALL read_details(?)");
+        $sql->bind_param("s", $id);
+        $sql->execute();
+        $result = $sql->get_result();
 
+        // PLS FIX!!!!
+        if ($sql->num_rows > 0) {
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit;
+        }
+
+        while ($row = $result->fetch_assoc()) {
             $district = $row["district"];
             $city = $row["city"];
             $tvi = $row["tvi"];
@@ -99,40 +96,9 @@
             $submitted_documents_date = $row["submitted_documents_date"];
             $interview_date = $row["interview_date"];
             $not_hired_reason = $row["not_hired_reason"];
-
-            mysqli_close($connection);
-        }
-        else {
-            header("Location: ../records/index.php");
-            mysqli_close($connection);
-            exit();
-        }
-    }
-    else if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        if (!isset($_GET["id"])) {
-            header("Location: ../records/index.php");
-            exit();
         }
 
-        if (!isset($_POST["delete"])) 
-            return;
-
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-        if ($connection->connect_error) 
-            die("Connection failed: " . $connection->connect_error);
-
-        $id = $_GET["id"];
-        $sql = "CALL delete_record($id)";
-
-        try {
-            mysqli_query($connection, $sql);
-            header("Location: ../records/index.php");
-            $connection->close();
-            exit();
-        } 
-        catch (mysqli_sql_exception) {
-            $validation_message = "Database error: " . $connection->error;
-        }
+        $connection->close();
     }
 ?>
 <!DOCTYPE html>
@@ -143,6 +109,7 @@
     <title>TESDA - E-TRAK</title>
     <link rel="stylesheet" href="../wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../wwwroot/css/style.css" />
+    <link rel="stylesheet" href="../wwwroot/css/records/style.css" />
 </head>
 <body>
     <?php include "../sections/header.php"; ?>
@@ -316,7 +283,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="lead">@Model.full_name</p>
+                        <p class="lead"><?php echo $full_name ?></p>
                         <p>Are you sure to delete this record?</p>
                     </div>
                     <div class="modal-footer">
@@ -339,3 +306,34 @@
     <script src="../wwwroot/js/records/details.js"></script>
 </body>
 </html>
+<?php
+    function delete_record(&$validation_message) {
+        if (!isset($_GET["id"])) {
+            header("Location: ../records/index.php");
+            exit;
+        }
+
+        if (!isset($_POST["delete"])) 
+            return;
+
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
+        try {
+            $id = $_GET["id"];
+            $sql = $connection->prepare("CALL delete_record(?);");
+            $sql->bind_param("s", $id);
+            $sql->execute();
+
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit;
+        } 
+        catch (mysqli_sql_exception) {
+            $validation_message = "Database error: " . $connection->error;
+        }
+    }
+?>

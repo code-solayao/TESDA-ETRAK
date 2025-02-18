@@ -2,18 +2,9 @@
     include("../sections/session_manager.php");
 
     $validation_message = "";
-    include("../sections/database.php");
-    try {
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
 
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            create_entry($connection, $validation_message);
-        }
-
-        mysqli_close($connection);
-    }
-    catch (mysqli_sql_exception $ex) {
-        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        create_entry($validation_message);
     }
 ?>
 <!DOCTYPE html>
@@ -182,30 +173,29 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitRecordModal">Submit</button>
+                        <!-- <input type="submit" class="btn btn-primary" name="submit" value="Confirm" role="button" /> -->
+                        <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#submitRecordModal">Submit</button>
                         <a class="btn btn-secondary" href="../records/index.php" role="button">Cancel</a>
                     </div>
-                </form>
-            </div>
-            <!-- Modal -->
-            <div class="modal" tabindex="-1" id="submitRecordModal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Submit Record</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Once this record is submitted, this information will be permanent and updating it will never be possible. Do you wish to confirm this?</p>
-                        </div>
-                        <div class="modal-footer">
-                            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <input type="submit" class="btn btn-primary" name="submit" value="Confirm" role="button" />
-                            </form>
+                    <!-- Modal -->
+                    <div class="modal" tabindex="-1" id="submitRecordModal">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Submit Record</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Once this record is submitted, this information will be permanent and updating it will never be possible. Do you wish to confirm this?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    <input type="submit" class="btn btn-primary" name="submit" value="Confirm" role="button" />
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
             
         </main>
@@ -219,7 +209,13 @@
 </body>
 </html>
 <?php
-    function create_entry($connection, &$validation_message) {
+    function create_entry(&$validation_message) {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
         $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
         $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
         $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
@@ -237,22 +233,29 @@
         $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
         $tvi = filter_input(INPUT_POST, "tvi", FILTER_SANITIZE_SPECIAL_CHARS);
         $allocation = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
-    
-        if (check_existing_name($full_name, $connection)) {
-            $validation_message = "This entry name already exists. Please enter another name.";
-            return;
-        }
-    
-        $sql = "CALL create_entry('$district', '$city', '$tvi', '$qualification_title', '$sector', 
-                                    '$last_name', '$first_name', '$middle_name', '$extension_name', '$full_name', 
-                                    '$sex', '$birthdate', '$contact_number', '$email', '$scholarship_type', 
-                                    '$address', '$allocation');";
 
         try {
-            mysqli_query($connection, $sql);
+            $sql = $connection->prepare("CALL check_fullname(?);");
+            $sql->bind_param("s", $full_name);
+            $sql->execute();
+            $sql->store_result();
+
+            if ($sql->num_rows > 0) {
+                $validation_message = "This entry name already exists. Please enter another name.";
+                $sql->close();
+                $connection->close();
+                return;
+            }
+
+            $sql = null;
+            $sql = $connection->prepare("CALL create_entry('$district', '$city', '$tvi', '$qualification_title', '$sector', 
+                                    '$last_name', '$first_name', '$middle_name', '$extension_name', '$full_name', 
+                                    '$sex', '$birthdate', '$contact_number', '$email', '$scholarship_type', 
+                                    '$address', '$allocation');");
+            $sql->execute();
             header("Location: ../records/index.php");
             $connection->close();
-            exit();
+            exit;
         } 
         catch (mysqli_sql_exception) {
             $validation_message = "Database error: " . $connection->error;
@@ -276,21 +279,5 @@
         }
 
         return $format;
-    }
-
-    function check_existing_name($full_name, $connection) {
-        $sql = $connection->prepare("CALL check_fullname(?);");
-        $sql->bind_param("s", $full_name);
-        $sql->execute();
-        $sql->store_result();
-
-        if ($sql->num_rows === 0) {
-            $sql->close();
-            return false;
-        }
-        else {
-            $sql->close();
-            return true;
-        }
     }
 ?>

@@ -4,18 +4,8 @@
     $_SESSION["username"] = null;
 
     $validation_message = "";
-    include("../sections/database.php");
-    try {
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
-
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            create_user($connection, $validation_message);
-        }
-
-        mysqli_close($connection);
-    }
-    catch (mysqli_sql_exception $ex) {
-        $validation_message = "<strong>Cannot establish database connection.</strong> <br />" . $ex;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        create_user($validation_message);
     }
 ?>
 <!DOCTYPE html>
@@ -62,7 +52,13 @@
 </body>
 </html>
 <?php
-    function create_user($connection, &$validation_message) {
+    function create_user(&$validation_message) {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
         $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
         $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
         $hash_password = password_hash($password, PASSWORD_DEFAULT);

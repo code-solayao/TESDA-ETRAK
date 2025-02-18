@@ -198,6 +198,7 @@
     <link rel="stylesheet" href="../wwwroot/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../wwwroot/css/style.css" />
     <link rel="stylesheet" href="../wwwroot/css/records/edit.css" />
+    <link rel="stylesheet" href="../wwwroot/css/records/style.css" />
 </head>
 <body>
     <?php include "../sections/header.php"; ?>
