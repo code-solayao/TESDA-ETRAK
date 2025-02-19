@@ -1,7 +1,7 @@
 <?php
     include("../sections/session_manager.php");
 
-    $id = 0;
+    $id = $_GET["id"];
     $district = "";
     $city = "";
     $tvi = "";
@@ -42,63 +42,10 @@
         delete_record($validation_message);
     }
     else {
-        include("../sections/database.php");
-        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
-        if ($connection->connect_error) {
-            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
-        }
-
-        $id = $_GET["id"];
-        $sql = $connection->prepare("CALL read_details(?)");
-        $sql->bind_param("s", $id);
-        $sql->execute();
-        $result = $sql->get_result();
-
-        // PLS FIX!!!!
-        if ($sql->num_rows > 0) {
-            header("Location: ../records/index.php");
-            $connection->close();
-            exit;
-        }
-
-        while ($row = $result->fetch_assoc()) {
-            $district = $row["district"];
-            $city = $row["city"];
-            $tvi = $row["tvi"];
-            $qualification_title = $row["qualification_title"];
-            $sector = $row["sector"];
-            $full_name = $row["full_name"];
-            $sex = $row['sex'];
-            $birthdate = $row["birthdate"];
-            $contact_number = $row["contact_number"];
-            $email = $row["email"];
-            $scholarship_type = $row["scholarship_type"];
-            $address = $row["address"];
-            $allocation = $row["allocation"];
-
-            $verification_means = $row["verification_means"];
-            $verification_date = $row["verification_date"];
-            $verification_status = $row["verification_status"];
-            $follow_up_date_1 = $row["follow_up_date_1"];
-            $follow_up_date_2 = $row["follow_up_date_2"];
-            $response_status = $row["response_status"];
-            $not_interested_reason = $row["not_interested_reason"];
-            $referral_status = $row["referral_status"];
-            $referral_date = $row["referral_date"];
-            $no_referral_reason = $row["no_referral_reason"];
-            $invalid_contact = $row["invalid_contact"];
-
-            $company_name = $row["company_name"];
-            $company_address = $row["company_address"];
-            $job_title = $row["job_title"];
-            $employment_status = $row["employment_status"];
-            $hired_date = $row["hired_date"];
-            $submitted_documents_date = $row["submitted_documents_date"];
-            $interview_date = $row["interview_date"];
-            $not_hired_reason = $row["not_hired_reason"];
-        }
-
-        $connection->close();
+        read_details($district, $city, $tvi, $qualification_title, $sector, $full_name, $sex, $birthdate, $contact_number, $email, $scholarship_type, $address, $allocation, 
+            $verification_means, $verification_date, $verification_status, $follow_up_date_1, $follow_up_date_2, $response_status, $not_interested_reason, $referral_status, 
+            $referral_date, $no_referral_reason, $invalid_contact, $company_name, $company_address, $job_title, $employment_status, $hired_date, $submitted_documents_date, 
+            $interview_date, $not_hired_reason);
     }
 ?>
 <!DOCTYPE html>
@@ -335,5 +282,68 @@
         catch (mysqli_sql_exception) {
             $validation_message = "Database error: " . $connection->error;
         }
+    }
+
+    function read_details(&$district, &$city, &$tvi, &$qualification_title, &$sector, &$full_name, &$sex, &$birthdate, &$contact_number, &$email, &$scholarship_type, &$address, 
+        &$allocation, &$verification_means, &$verification_date, &$verification_status, &$follow_up_date_1, &$follow_up_date_2, &$response_status, &$not_interested_reason, 
+        &$referral_status, &$referral_date, &$no_referral_reason, &$invalid_contact, &$company_name, &$company_address, &$job_title, &$employment_status, &$hired_date, 
+        &$submitted_documents_date, &$interview_date, &$not_hired_reason)
+    {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
+        $id = $_GET["id"];
+        $sql = $connection->prepare("CALL read_details(?)");
+        $sql->bind_param("s", $id);
+        $sql->execute();
+        $result = $sql->get_result();
+
+        if ($result->num_rows === 0) {
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit;
+        }
+
+        while ($row = $result->fetch_assoc()) {
+            $district = $row["district"];
+            $city = $row["city"];
+            $tvi = $row["tvi"];
+            $qualification_title = $row["qualification_title"];
+            $sector = $row["sector"];
+            $full_name = $row["full_name"];
+            $sex = $row['sex'];
+            $birthdate = $row["birthdate"];
+            $contact_number = $row["contact_number"];
+            $email = $row["email"];
+            $scholarship_type = $row["scholarship_type"];
+            $address = $row["address"];
+            $allocation = $row["allocation"];
+
+            $verification_means = $row["verification_means"];
+            $verification_date = $row["verification_date"];
+            $verification_status = $row["verification_status"];
+            $follow_up_date_1 = $row["follow_up_date_1"];
+            $follow_up_date_2 = $row["follow_up_date_2"];
+            $response_status = $row["response_status"];
+            $not_interested_reason = $row["not_interested_reason"];
+            $referral_status = $row["referral_status"];
+            $referral_date = $row["referral_date"];
+            $no_referral_reason = $row["no_referral_reason"];
+            $invalid_contact = $row["invalid_contact"];
+
+            $company_name = $row["company_name"];
+            $company_address = $row["company_address"];
+            $job_title = $row["job_title"];
+            $employment_status = $row["employment_status"];
+            $hired_date = $row["hired_date"];
+            $submitted_documents_date = $row["submitted_documents_date"];
+            $interview_date = $row["interview_date"];
+            $not_hired_reason = $row["not_hired_reason"];
+        }
+
+        $connection->close();
     }
 ?>

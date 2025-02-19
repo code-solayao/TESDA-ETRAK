@@ -1,18 +1,7 @@
 <?php
-    session_start();
-    if (!isset($_SESSION["username"])) {
-        session_unset();
-        session_destroy();
-        header("Location: ../login/index.php");
-        exit();
-    }
+    include("../sections/session_manager.php");
 
-    $db_server = "192.168.1.107";
-    $db_user = "TESDA-NCR";
-    $db_password = "serverdb@tesdancr2025";
-    $database = "tesda_etrak_db";
-
-    $id = 0;
+    $id = $_GET["id"];
     $district = "";
     $city = "";
     $tvi = "";
@@ -53,140 +42,17 @@
     $not_hired_reason = "";
 
     $validation_message = "";
-    switch ($_SERVER["REQUEST_METHOD"]) {
-        case "GET":
-            if (!isset($_GET["id"])) {
-                header("Location: ../records/index.php");
-                exit();
-            }
-    
-            $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-            if ($connection->connect_error) 
-                die("Connection failed: " . $connection->connect_error);
-    
-            $id = $_GET["id"];
-            $sql = "CALL read_details($id)";
-            $result = mysqli_query($connection, $sql);
-            
-            if (mysqli_num_rows($result) === 0) {
-                header("Location: ../records/index.php");
-                mysqli_close($connection);
-                exit();
-            }
-            else {
-                $row = mysqli_fetch_assoc($result);
-    
-                $district = $row["district"];
-                $city = $row["city"];
-                $tvi = $row["tvi"];
-                $qualification_title = $row["qualification_title"];
-                $sector = $row["sector"];
-                $last_name = $row["last_name"];
-                $first_name = $row["first_name"];
-                $middle_name = $row["middle_name"];
-                $extension_name = $row["extension_name"];
-                $full_name = $row["full_name"];
-                $sex = $row['sex'];
-                $birthdate = $row["birthdate"];
-                $contact_number = $row["contact_number"];
-                $email = $row["email"];
-                $scholarship_type = $row["scholarship_type"];
-                $address = $row["address"];
-                $allocation = $row["allocation"];
-    
-                $verification_means = $row["verification_means"];
-                $verification_date = $row["verification_date"];
-                $verification_status = $row["verification_status"];
-                $follow_up_date_1 = $row["follow_up_date_1"];
-                $follow_up_date_2 = $row["follow_up_date_2"];
-                $response_status = $row["response_status"];
-                $not_interested_reason = $row["not_interested_reason"];
-                $referral_status = $row["referral_status"];
-                $referral_date = $row["referral_date"];
-                $no_referral_reason = $row["no_referral_reason"];
-                $invalid_contact = $row["invalid_contact"];
-    
-                $company_name = $row["company_name"];
-                $company_address = $row["company_address"];
-                $job_title = $row["job_title"];
-                $employment_status = $row["employment_status"];
-                $hired_date = $row["hired_date"];
-                $submitted_documents_date = $row["submitted_documents_date"];
-                $interview_date = $row["interview_date"];
-                $not_hired_reason = $row["not_hired_reason"];
-    
-                mysqli_close($connection);
-            }
-            break;
-
-        case "POST":
-            if (isset($_POST["submit"])) {
-                if (!isset($_GET["id"])) {
-                    header("Location: ../records/index.php");
-                    exit();
-                }
-
-                $connection = mysqli_connect($db_server, $db_user, $db_password, $database);
-                if ($connection->connect_error) 
-                    die("Connection failed: " . $connection->connect_error);
-                
-                $id = $_GET["id"];
-                $district = filter_input(INPUT_POST, "district", FILTER_SANITIZE_SPECIAL_CHARS);
-                $city = filter_input(INPUT_POST, "city", FILTER_SANITIZE_SPECIAL_CHARS);
-                $tvi = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
-                $qualification_title = filter_input(INPUT_POST, "qualification_title", FILTER_SANITIZE_SPECIAL_CHARS);
-                $sector = filter_input(INPUT_POST, "sector", FILTER_SANITIZE_SPECIAL_CHARS);
-                $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $extension_name = filter_input(INPUT_POST, "extension_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $full_name = filter_input(INPUT_POST, "full_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $sex = filter_input(INPUT_POST, "sex", FILTER_SANITIZE_SPECIAL_CHARS);
-                $birthdate = filter_input(INPUT_POST, "birthdate", FILTER_SANITIZE_SPECIAL_CHARS);
-                $contact_number = filter_input(INPUT_POST, "contact_number", FILTER_SANITIZE_SPECIAL_CHARS);
-                $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL);
-                $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
-                $address = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
-                $allocation = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
-    
-                $verification_means = filter_input(INPUT_POST, "verification_means", FILTER_SANITIZE_SPECIAL_CHARS);
-                $verification_date = filter_input(INPUT_POST, "verification_date", FILTER_SANITIZE_SPECIAL_CHARS);
-                $verification_status = filter_input(INPUT_POST, "verification_status", FILTER_SANITIZE_SPECIAL_CHARS);
-                $follow_up_date_1 = filter_input(INPUT_POST, "follow_up_date_1", FILTER_SANITIZE_SPECIAL_CHARS);
-                $follow_up_date_2 = filter_input(INPUT_POST, "follow_up_date_2", FILTER_SANITIZE_SPECIAL_CHARS);
-                $response_status = filter_input(INPUT_POST, "response_status", FILTER_SANITIZE_SPECIAL_CHARS);
-                $not_interested_reason = filter_input(INPUT_POST, "not_interested_reason", FILTER_SANITIZE_SPECIAL_CHARS);
-                $referral_status = filter_input(INPUT_POST, "referral_status", FILTER_SANITIZE_SPECIAL_CHARS);
-                $referral_date = filter_input(INPUT_POST, "referral_date", FILTER_SANITIZE_SPECIAL_CHARS);
-                $no_referral_reason = filter_input(INPUT_POST, "no_referral_reason", FILTER_SANITIZE_SPECIAL_CHARS);
-                $invalid_contact = filter_input(INPUT_POST, "invalid_contact", FILTER_SANITIZE_SPECIAL_CHARS);
-    
-                $company_name = filter_input(INPUT_POST, "company_name", FILTER_SANITIZE_SPECIAL_CHARS);
-                $company_address = filter_input(INPUT_POST, "company_address", FILTER_SANITIZE_SPECIAL_CHARS);
-                $job_title = filter_input(INPUT_POST, "job_title", FILTER_SANITIZE_SPECIAL_CHARS);
-                $employment_status = filter_input(INPUT_POST, "employment_status", FILTER_SANITIZE_SPECIAL_CHARS);
-                $hired_date = filter_input(INPUT_POST, "hired_date", FILTER_SANITIZE_SPECIAL_CHARS);
-                $submitted_documents_date = filter_input(INPUT_POST, "submitted_documents_date", FILTER_SANITIZE_SPECIAL_CHARS);
-                $interview_date = filter_input(INPUT_POST, "interview_date", FILTER_SANITIZE_SPECIAL_CHARS);
-                $not_hired_reason = filter_input(INPUT_POST, "not_hired_reason", FILTER_SANITIZE_SPECIAL_CHARS);
-            
-                $sql = "CALL update_record('$id', '$verification_means', '$verification_date', '$verification_status', '$follow_up_date_1', '$follow_up_date_2', 
-                                            '$response_status', '$not_interested_reason', '$referral_status', '$referral_date', '$no_referral_reason', 
-                                            '$invalid_contact', '$company_name', '$company_address', '$job_title', '$employment_status', 
-                                            '$hired_date', '$submitted_documents_date', '$interview_date', '$not_hired_reason');";
-
-                try {
-                    mysqli_query($connection, $sql);
-                    header("Location: ../records/index.php");
-                    $connection->close();
-                    exit();
-                } 
-                catch (mysqli_sql_exception) {
-                    $validation_message = "Database error: " . $connection->error;
-                    echo "Database error: " . $connection->error;
-                }
-            }
-            break;
+    if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        update_record($district, $city, $tvi, $qualification_title, $sector, $last_name, $first_name, $middle_name, $extension_name, $full_name, $sex, $birthdate, 
+            $contact_number, $email, $scholarship_type, $address, $allocation, $verification_means, $verification_date, $verification_status, $follow_up_date_1, 
+            $follow_up_date_2, $response_status, $not_interested_reason, $referral_status, $referral_date, $no_referral_reason, $invalid_contact, $company_name, 
+            $company_address, $job_title, $employment_status, $hired_date, $submitted_documents_date, $interview_date, $not_hired_reason, $validation_message);
+    }
+    else {
+        read_details($district, $city, $tvi, $qualification_title, $sector, $last_name, $first_name, $middle_name, $extension_name, $full_name, $sex, $birthdate, 
+            $contact_number, $email, $scholarship_type, $address, $allocation, $verification_means, $verification_date, $verification_status, $follow_up_date_1, 
+            $follow_up_date_2, $response_status, $not_interested_reason, $referral_status, $referral_date, $no_referral_reason, $invalid_contact, $company_name, 
+            $company_address, $job_title, $employment_status, $hired_date, $submitted_documents_date, $interview_date, $not_hired_reason);
     }
 ?>
 <!DOCTYPE html>
@@ -207,7 +73,7 @@
 
             <div class="text-center mb-4">
                 <h1 class="display-4">Update Record</h1>
-                <a class="btn btn-secondary" href="../records/index.php" role="button">Cancel</a>
+                <a class="btn btn-secondary" href="../records/details.php?id=<?php echo $id; ?>" role="button">Cancel</a>
             </div>
             <div class="tab-buttons">
                 <button class="tablink" id="detailsTab">Details</button>
@@ -305,8 +171,9 @@
                             <select class="form-control" id="verification_means" name="verification_means">
                                 <?php
                                     $verifmeans_options = ["None", "For Verification", "Phone-called", "E-mailed", "SMS"];
+                                    $verifmeans_db = (!empty($verification_means)) ? $verification_means : "None";
                                     foreach ($verifmeans_options as $option) { ?>
-                                    <option value="<?php echo $option; ?>" <?php echo ($option == $verification_means) ? 'selected' : ''; ?>>
+                                    <option value="<?php echo $option; ?>" <?php echo ($option == $verifmeans_db) ? 'selected' : ''; ?>>
                                         <?php echo ucfirst($option); ?>
                                     </option>
                                 <?php } ?>
@@ -454,8 +321,9 @@
                                         <select class="form-control" id="notHiredReason" name="not_hired_reason" disabled>
                                             <?php
                                                 $not_hired_reasons = ["None", "Underage", "Upskilling", "Lack of Experience", "Did not meet the requirements"];
+                                                $reason_db = (!empty($not_hired_reason)) ? $not_hired_reason : "None";
                                                 foreach ($not_hired_reasons as $reason) { ?>
-                                                <option value="<?php echo $reason; ?>" <?php echo ($reason == $not_hired_reason) ? 'selected' : ''; ?>>
+                                                <option value="<?php echo $reason ?>" <?php echo ($reason == $reason_db) ? 'selected' : ''; ?>>
                                                     <?php echo ucfirst($reason); ?>
                                                 </option>
                                             <?php } ?>
@@ -482,3 +350,145 @@
     <script src="../wwwroot/js/records/edit.js"></script>
 </body>
 </html>
+<?php
+    function update_record(&$district, &$city, &$tvi, &$qualification_title, &$sector, &$last_name, &$first_name, &$middle_name, &$extension_name, &$full_name, &$sex, 
+        &$birthdate, &$contact_number, &$email, &$scholarship_type, &$address, &$allocation, &$verification_means, &$verification_date, &$verification_status, 
+        &$follow_up_date_1, &$follow_up_date_2, &$response_status, &$not_interested_reason, &$referral_status, &$referral_date, &$no_referral_reason, &$invalid_contact, 
+        &$company_name, &$company_address, &$job_title, &$employment_status, &$hired_date, &$submitted_documents_date, &$interview_date, &$not_hired_reason, &$validation_message) 
+    {
+        if (!isset($_GET["id"])) {
+            header("Location: ../records/index.php");
+            exit;
+        }
+
+        if (!isset($_POST["submit"]))
+            return;
+
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
+        try {
+            $id = $_GET["id"];
+            $district = filter_input(INPUT_POST, "district", FILTER_SANITIZE_SPECIAL_CHARS);
+            $city = filter_input(INPUT_POST, "city", FILTER_SANITIZE_SPECIAL_CHARS);
+            $tvi = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+            $qualification_title = filter_input(INPUT_POST, "qualification_title", FILTER_SANITIZE_SPECIAL_CHARS);
+            $sector = filter_input(INPUT_POST, "sector", FILTER_SANITIZE_SPECIAL_CHARS);
+            $last_name = filter_input(INPUT_POST, "last_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $first_name = filter_input(INPUT_POST, "first_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $middle_name = filter_input(INPUT_POST, "middle_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $extension_name = filter_input(INPUT_POST, "extension_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $full_name = filter_input(INPUT_POST, "full_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $sex = filter_input(INPUT_POST, "sex", FILTER_SANITIZE_SPECIAL_CHARS);
+            $birthdate = filter_input(INPUT_POST, "birthdate", FILTER_SANITIZE_SPECIAL_CHARS);
+            $contact_number = filter_input(INPUT_POST, "contact_number", FILTER_SANITIZE_SPECIAL_CHARS);
+            $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_EMAIL);
+            $scholarship_type = filter_input(INPUT_POST, "scholarship_type", FILTER_SANITIZE_SPECIAL_CHARS);
+            $address = filter_input(INPUT_POST, "address", FILTER_SANITIZE_SPECIAL_CHARS);
+            $allocation = filter_input(INPUT_POST, "allocation", FILTER_SANITIZE_SPECIAL_CHARS);
+
+            $verification_means = filter_input(INPUT_POST, "verification_means", FILTER_SANITIZE_SPECIAL_CHARS);
+            $verification_date = filter_input(INPUT_POST, "verification_date", FILTER_SANITIZE_SPECIAL_CHARS);
+            $verification_status = filter_input(INPUT_POST, "verification_status", FILTER_SANITIZE_SPECIAL_CHARS);
+            $follow_up_date_1 = filter_input(INPUT_POST, "follow_up_date_1", FILTER_SANITIZE_SPECIAL_CHARS);
+            $follow_up_date_2 = filter_input(INPUT_POST, "follow_up_date_2", FILTER_SANITIZE_SPECIAL_CHARS);
+            $response_status = filter_input(INPUT_POST, "response_status", FILTER_SANITIZE_SPECIAL_CHARS);
+            $not_interested_reason = filter_input(INPUT_POST, "not_interested_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+            $referral_status = filter_input(INPUT_POST, "referral_status", FILTER_SANITIZE_SPECIAL_CHARS);
+            $referral_date = filter_input(INPUT_POST, "referral_date", FILTER_SANITIZE_SPECIAL_CHARS);
+            $no_referral_reason = filter_input(INPUT_POST, "no_referral_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+            $invalid_contact = filter_input(INPUT_POST, "invalid_contact", FILTER_SANITIZE_SPECIAL_CHARS);
+
+            $company_name = filter_input(INPUT_POST, "company_name", FILTER_SANITIZE_SPECIAL_CHARS);
+            $company_address = filter_input(INPUT_POST, "company_address", FILTER_SANITIZE_SPECIAL_CHARS);
+            $job_title = filter_input(INPUT_POST, "job_title", FILTER_SANITIZE_SPECIAL_CHARS);
+            $employment_status = filter_input(INPUT_POST, "employment_status", FILTER_SANITIZE_SPECIAL_CHARS);
+            $hired_date = filter_input(INPUT_POST, "hired_date", FILTER_SANITIZE_SPECIAL_CHARS);
+            $submitted_documents_date = filter_input(INPUT_POST, "submitted_documents_date", FILTER_SANITIZE_SPECIAL_CHARS);
+            $interview_date = filter_input(INPUT_POST, "interview_date", FILTER_SANITIZE_SPECIAL_CHARS);
+            $not_hired_reason = filter_input(INPUT_POST, "not_hired_reason", FILTER_SANITIZE_SPECIAL_CHARS);
+            
+            $sql = $connection->prepare("CALL update_record('$id', '$verification_means', '$verification_date', '$verification_status', '$follow_up_date_1', '$follow_up_date_2', 
+                '$response_status', '$not_interested_reason', '$referral_status', '$referral_date', '$no_referral_reason', '$invalid_contact', '$company_name', '$company_address', 
+                '$job_title', '$employment_status', '$hired_date', '$submitted_documents_date', '$interview_date', '$not_hired_reason');");
+            $sql->execute();
+
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit;
+        }
+        catch (mysqli_sql_exception) {
+            $validation_message = "<strong>Database error: </strong><br />" . $connection->error;
+        }
+    }
+
+    function read_details(&$district, &$city, &$tvi, &$qualification_title, &$sector, &$last_name, &$first_name, &$middle_name, &$extension_name, &$full_name, &$sex, 
+        &$birthdate, &$contact_number, &$email, &$scholarship_type, &$address, &$allocation, &$verification_means, &$verification_date, &$verification_status, 
+        &$follow_up_date_1, &$follow_up_date_2, &$response_status, &$not_interested_reason, &$referral_status, &$referral_date, &$no_referral_reason, &$invalid_contact, 
+        &$company_name, &$company_address, &$job_title, &$employment_status, &$hired_date, &$submitted_documents_date, &$interview_date, &$not_hired_reason)
+    {
+        include("../sections/database.php");
+        $connection = mysqli_connect($db_server, $db_user, $db_password, $db_schema);
+        if ($connection->connect_error) {
+            die("<strong>Connection failed. </strong><br />" . $connection->connect_error);
+        }
+
+        $id = $_GET["id"];
+        $sql = $connection->prepare("CALL read_details(?)");
+        $sql->bind_param("s", $id);
+        $sql->execute();
+        $result = $sql->get_result();
+
+        if ($result->num_rows === 0) {
+            header("Location: ../records/index.php");
+            $connection->close();
+            exit;
+        }
+
+        while ($row = $result->fetch_assoc()) {
+            $district = $row["district"];
+            $city = $row["city"];
+            $tvi = $row["tvi"];
+            $qualification_title = $row["qualification_title"];
+            $sector = $row["sector"];
+            $last_name = $row["last_name"];
+            $first_name = $row["first_name"];
+            $middle_name = $row["middle_name"];
+            $extension_name = $row["extension_name"];
+            $full_name = $row["full_name"];
+            $sex = $row['sex'];
+            $birthdate = $row["birthdate"];
+            $contact_number = $row["contact_number"];
+            $email = $row["email"];
+            $scholarship_type = $row["scholarship_type"];
+            $address = $row["address"];
+            $allocation = $row["allocation"];
+
+            $verification_means = $row["verification_means"];
+            $verification_date = $row["verification_date"];
+            $verification_status = $row["verification_status"];
+            $follow_up_date_1 = $row["follow_up_date_1"];
+            $follow_up_date_2 = $row["follow_up_date_2"];
+            $response_status = $row["response_status"];
+            $not_interested_reason = $row["not_interested_reason"];
+            $referral_status = $row["referral_status"];
+            $referral_date = $row["referral_date"];
+            $no_referral_reason = $row["no_referral_reason"];
+            $invalid_contact = $row["invalid_contact"];
+
+            $company_name = $row["company_name"];
+            $company_address = $row["company_address"];
+            $job_title = $row["job_title"];
+            $employment_status = $row["employment_status"];
+            $hired_date = $row["hired_date"];
+            $submitted_documents_date = $row["submitted_documents_date"];
+            $interview_date = $row["interview_date"];
+            $not_hired_reason = $row["not_hired_reason"];
+        }
+
+        $connection->close();
+    }
+?>
