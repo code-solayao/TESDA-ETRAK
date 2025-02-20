@@ -80,7 +80,7 @@
                 <button class="tablink" id="verificationTab">Verification</button>
                 <button class="tablink" id="employmentTab">Employment</button>
             </div>
-            <form asp-action="Edit" method="post">
+            <form action="<?php htmlspecialchars($_SERVER["PHP_SELF"]) ?>" method="post">
                 <div id="details" class="tabcontent">
                     <fieldset disabled>
                         <!-- FULL NAME -->
